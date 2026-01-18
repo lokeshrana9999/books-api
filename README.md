@@ -27,11 +27,7 @@ Server runs on `http://localhost:3000`
 
 ### How to import and test the postman collection.
 
-
-Uploading Recording 2026-01-18 184628.mp4…
-
-
-
+https://youtu.be/ndw1AoXfBsM
 
 The **Postman collection** (`docs/Book-Publishing-API.postman_collection.json`) demonstrates all requirements:
 
