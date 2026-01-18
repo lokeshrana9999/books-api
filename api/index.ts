@@ -10,26 +10,23 @@ export default async function handler(req: any, res: any) {
     await app.ready();
   }
 
-  // Vercel routes /api/* to this handler, but req.url might be /api/index
-  // We need to get the original request path
-  // Vercel stores original path in x-vercel-path header or we can use the originalUrl
-  const originalUrl = req.originalUrl || req.url;
+  // Vercel rewrites /api/* to /api/index, so req.url will be /api/index
+  // We need to restore the original request path for Fastify routing
+  // Check for original path in Vercel headers (set by rewrites)
+  const vercelPath = req.headers['x-vercel-path'] || 
+                     req.headers['x-invoke-path'] ||
+                     req.headers['x-forwarded-uri'] ||
+                     req.headers['x-original-url'];
   
-  // If req.url is the function path (/api/index), try to get original from headers
-  if (req.url === '/api/index' || req.url === '/api') {
-    // Check Vercel headers for original path
-    const vercelPath = req.headers['x-vercel-path'] || 
-                       req.headers['x-invoke-path'] ||
-                       req.headers['x-forwarded-uri'] ||
-                       req.headers['x-original-url'];
-    
-    if (vercelPath) {
-      req.url = vercelPath;
-    } else {
-      // If no header, the path might be in the query or we need to use a different approach
-      // For now, log to see what we're getting
-      console.log('Original req.url:', req.url);
-      console.log('Available headers:', Object.keys(req.headers).filter(k => k.toLowerCase().includes('path') || k.toLowerCase().includes('url')));
+  // If we have the original path from headers, use it
+  if (vercelPath) {
+    req.url = vercelPath;
+  } else if (req.url === '/api/index' || req.url === '/api') {
+    // Fallback: if no header and URL is the function path, 
+    // the original might be in the query string or we need to handle differently
+    // For now, if it's just /api, default to /health for testing
+    if (req.url === '/api') {
+      req.url = '/health';
     }
   }
 
