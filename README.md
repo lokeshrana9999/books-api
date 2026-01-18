@@ -132,6 +132,7 @@ curl -H "X-API-Key: admin-api-key-12345" \
 ## Documentation
 
 - **[Project Requirements](./project-req.md)** - Complete specification
+- **[Project Structure](./docs/PROJECT_STRUCTURE.md)** - Architecture and code organization
 - **[Supabase Setup](./docs/SUPABASE_SETUP.md)** - Database setup guide
 - **[Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md)** - Production deployment
 - **[Postman Collection](./docs/Book-Publishing-API.postman_collection.json)** - Complete API tests
