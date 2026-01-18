@@ -27,7 +27,7 @@ Server runs on `http://localhost:3000`
 
 ### How to import and test the postman collection.
 
-https://youtu.be/ndw1AoXfBsM
+[![How to Import and Test the Postman Collection](https://img.youtube.com/vi/ndw1AoXfBsM/maxresdefault.jpg)](https://youtu.be/ndw1AoXfBsM)
 
 The **Postman collection** (`docs/Book-Publishing-API.postman_collection.json`) demonstrates all requirements:
 
