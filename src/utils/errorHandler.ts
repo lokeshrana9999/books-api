@@ -1,6 +1,6 @@
 import { FastifyError, FastifyReply } from 'fastify';
 import { Prisma } from '@prisma/client';
-import { ZodError } from 'zod';
+import { ZodError, ZodIssue } from 'zod';
 import { requestContext } from '../infra/asyncContext.js';
 import { logger } from '../infra/logger.js';
 
@@ -56,7 +56,8 @@ export function createErrorHandler() {
       errorCode = 'VALIDATION_ERROR';
       message = 'Validation failed';
       
-      const details = error.errors.map(err => ({
+      // ZodError uses 'issues' property, not 'errors'
+      const details = error.issues.map((err: ZodIssue) => ({
         path: err.path.join('.'),
         message: err.message,
       }));
