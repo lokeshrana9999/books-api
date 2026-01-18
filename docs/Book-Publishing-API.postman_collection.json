@@ -1,0 +1,1600 @@
+{
+	"info": {
+		"_postman_id": "books-api-collection",
+		"name": "Book Publishing API - E2E Testing",
+		"description": "Comprehensive Postman collection for end-to-end testing of the Book Publishing API with config-driven audit trail",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication & Authorization",
+			"item": [
+				{
+					"name": "Health Check (No Auth)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has status and timestamp\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData).to.have.property('timestamp');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "List Books - No API Key (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error response format is correct\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.have.property('code');",
+									"    pm.expect(jsonData.error).to.have.property('message');",
+									"    pm.expect(jsonData.error).to.have.property('requestId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "List Books - Invalid API Key (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "invalid-key-12345",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "List Books - Admin API Key (Should Succeed)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has data array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Reviewer API Key (Should Fail - 403)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{reviewer_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.test(\"Error indicates insufficient permissions\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error.code).to.include('INSUFFICIENT_PERMISSIONS');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Admin API Key (Should Succeed)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has audit logs\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "2. Books CRUD Operations",
+			"item": [
+				{
+					"name": "Create Book - Valid Data",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generate unique book title for testing",
+									"pm.environment.set('test_book_title', 'Postman Test Book ' + Date.now());"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response contains book data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"    pm.expect(jsonData).to.have.property('title');",
+									"    pm.expect(jsonData).to.have.property('authors');",
+									"    pm.expect(jsonData).to.have.property('createdBy');",
+									"    ",
+									"    // Save book ID for subsequent requests",
+									"    pm.environment.set('book_id', jsonData.id);",
+									"});",
+									"",
+									"pm.test(\"Request ID is in response headers\", function () {",
+									"    pm.expect(pm.response.headers.get('x-request-id')).to.exist;",
+									"    pm.environment.set('request_id', pm.response.headers.get('x-request-id'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							},
+							{
+								"key": "x-request-id",
+								"value": "postman-test-{{$timestamp}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"{{test_book_title}}\",\n  \"authors\": \"Postman Test Author\",\n  \"publishedBy\": \"Postman Test Publisher\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Book - Missing Required Fields (Should Fail)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Incomplete Book\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 or 500\", function () {",
+									"    pm.expect([400, 500]).to.include(pm.response.code);",
+									"});",
+									"",
+									"pm.test(\"Error response format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Book by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books", "{{book_id}}"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book ID matches\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.equal(pm.environment.get('book_id'));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "List Books with Pagination",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books?limit=5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "5"
+								},
+								{
+									"key": "cursor",
+									"value": "{{cursor}}",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has pagination structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Save cursor if present\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.nextCursor) {",
+									"        pm.environment.set('cursor', jsonData.nextCursor);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Book",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Book was updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.title).to.equal('Updated Postman Test Book');",
+									"    pm.expect(jsonData).to.have.property('updatedBy');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Postman Test Book\",\n  \"publishedBy\": \"Updated Publisher\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books", "{{book_id}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Non-Existent Book (Should Fail)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books/nonexistent-id-12345",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books", "nonexistent-id-12345"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Delete Book",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/books/{{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books", "{{book_id}}"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "3. Audit Trail Verification",
+			"item": [
+				{
+					"name": "Query All Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has audit logs\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Audit logs have required fields\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data.length > 0) {",
+									"        var audit = jsonData.data[0];",
+									"        pm.expect(audit).to.have.property('id');",
+									"        pm.expect(audit).to.have.property('entity');",
+									"        pm.expect(audit).to.have.property('entityId');",
+									"        pm.expect(audit).to.have.property('action');",
+									"        pm.expect(audit).to.have.property('actorId');",
+									"        pm.expect(audit).to.have.property('requestId');",
+									"        pm.expect(audit).to.have.property('diff');",
+									"        pm.expect(audit).to.have.property('timestamp');",
+									"        ",
+									"        // Save first audit ID for later use",
+									"        pm.environment.set('audit_id', audit.id);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Entity",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?entity=Book&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "entity",
+									"value": "Book"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All audits are for Book entity\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.forEach(function(audit) {",
+									"        pm.expect(audit.entity).to.equal('Book');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Action",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?action=create&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "action",
+									"value": "create"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All audits are create actions\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    jsonData.data.forEach(function(audit) {",
+									"        pm.expect(audit.action).to.equal('create');",
+									"    });",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Entity ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?entityId={{book_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "entityId",
+									"value": "{{book_id}}"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All audits are for the specified book\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var bookId = pm.environment.get('book_id');",
+									"    if (bookId) {",
+									"        jsonData.data.forEach(function(audit) {",
+									"            pm.expect(audit.entityId).to.equal(bookId);",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Request ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?requestId={{request_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "requestId",
+									"value": "{{request_id}}"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"All audits have matching requestId\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var requestId = pm.environment.get('request_id');",
+									"    if (requestId) {",
+									"        jsonData.data.forEach(function(audit) {",
+									"            pm.expect(audit.requestId).to.equal(requestId);",
+									"        });",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?from=2024-01-01T00:00:00Z&to=2025-12-31T23:59:59Z",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "from",
+									"value": "2024-01-01T00:00:00Z"
+								},
+								{
+									"key": "to",
+									"value": "2025-12-31T23:59:59Z"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Query Audits - Filter by Fields Changed",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?fieldsChanged=title,authors",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "fieldsChanged",
+									"value": "title,authors"
+								}
+							]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Audit by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits/{{audit_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits", "{{audit_id}}"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Audit ID matches\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.id).to.equal(pm.environment.get('audit_id'));",
+									"});",
+									"",
+									"pm.test(\"Diff is valid and excludes updatedAt\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var diff = typeof jsonData.diff === 'string' ? JSON.parse(jsonData.diff) : jsonData.diff;",
+									"    pm.expect(diff).to.be.an('object');",
+									"    // Verify updatedAt is excluded (per audit.config.ts)",
+									"    pm.expect(diff).to.not.have.property('updatedAt');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Verify Audit After Book Create",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// This should be run after creating a book",
+									"// It verifies the audit log was automatically created"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Audit log exists for book creation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var bookId = pm.environment.get('book_id');",
+									"    ",
+									"    if (bookId && jsonData.data.length > 0) {",
+									"        var createAudit = jsonData.data.find(function(a) {",
+									"            return a.entityId === bookId && a.action === 'create';",
+									"        });",
+									"        pm.expect(createAudit).to.exist;",
+									"        ",
+									"        // Verify audit data integrity",
+									"        pm.expect(createAudit.entity).to.equal('Book');",
+									"        pm.expect(createAudit.action).to.equal('create');",
+									"        pm.expect(createAudit.actorId).to.exist;",
+									"        pm.expect(createAudit.requestId).to.exist;",
+									"        ",
+									"        // Verify diff structure",
+									"        var diff = typeof createAudit.diff === 'string' ? JSON.parse(createAudit.diff) : createAudit.diff;",
+									"        pm.expect(diff).to.have.property('title');",
+									"        pm.expect(diff).to.not.have.property('updatedAt'); // Excluded field",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits?entity=Book&entityId={{book_id}}&action=create",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits"],
+							"query": [
+								{
+									"key": "entity",
+									"value": "Book"
+								},
+								{
+									"key": "entityId",
+									"value": "{{book_id}}"
+								},
+								{
+									"key": "action",
+									"value": "create"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Complete Workflows",
+			"item": [
+				{
+					"name": "Complete Book Lifecycle with Audit Verification",
+					"item": [
+						{
+							"name": "Step 1: Create Book",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Book created successfully\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('workflow_book_id', jsonData.id);",
+											"    pm.environment.set('workflow_request_id', pm.response.headers.get('x-request-id'));",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "x-request-id",
+										"value": "workflow-{{$timestamp}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Workflow Test Book\",\n  \"authors\": \"Workflow Author\",\n  \"publishedBy\": \"Workflow Publisher\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/books",
+									"host": ["{{base_url}}"],
+									"path": ["api", "books"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 2: Verify Create Audit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Audit log exists\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+											"    ",
+											"    var createAudit = jsonData.data.find(function(a) {",
+											"        return a.entityId === pm.environment.get('workflow_book_id') && a.action === 'create';",
+											"    });",
+											"    pm.expect(createAudit).to.exist;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/audits?entityId={{workflow_book_id}}&action=create",
+									"host": ["{{base_url}}"],
+									"path": ["api", "audits"],
+									"query": [
+										{
+											"key": "entityId",
+											"value": "{{workflow_book_id}}"
+										},
+										{
+											"key": "action",
+											"value": "create"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 3: Update Book",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Book updated successfully\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = pm.response.json();",
+											"    pm.expect(jsonData.title).to.equal('Updated Workflow Book');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Updated Workflow Book\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/books/{{workflow_book_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["api", "books", "{{workflow_book_id}}"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 4: Verify Update Audit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Update audit exists\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    var updateAudit = jsonData.data.find(function(a) {",
+											"        return a.entityId === pm.environment.get('workflow_book_id') && a.action === 'update';",
+											"    });",
+											"    pm.expect(updateAudit).to.exist;",
+											"    ",
+											"    // Verify diff shows before/after",
+											"    var diff = typeof updateAudit.diff === 'string' ? JSON.parse(updateAudit.diff) : updateAudit.diff;",
+											"    pm.expect(diff.title).to.have.property('before');",
+											"    pm.expect(diff.title).to.have.property('after');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/audits?entityId={{workflow_book_id}}&action=update",
+									"host": ["{{base_url}}"],
+									"path": ["api", "audits"],
+									"query": [
+										{
+											"key": "entityId",
+											"value": "{{workflow_book_id}}"
+										},
+										{
+											"key": "action",
+											"value": "update"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 5: Delete Book",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/books/{{workflow_book_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["api", "books", "{{workflow_book_id}}"]
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Book deleted successfully\", function () {",
+											"    pm.response.to.have.status(204);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							]
+						},
+						{
+							"name": "Step 6: Verify Delete Audit",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Delete audit exists\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    var deleteAudit = jsonData.data.find(function(a) {",
+											"        return a.entityId === pm.environment.get('workflow_book_id') && a.action === 'delete';",
+											"    });",
+											"    pm.expect(deleteAudit).to.exist;",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/audits?entityId={{workflow_book_id}}&action=delete",
+									"host": ["{{base_url}}"],
+									"path": ["api", "audits"],
+									"query": [
+										{
+											"key": "entityId",
+											"value": "{{workflow_book_id}}"
+										},
+										{
+											"key": "action",
+											"value": "delete"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Step 7: Verify Book is Gone",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/books/{{workflow_book_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["api", "books", "{{workflow_book_id}}"]
+								}
+							},
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Book no longer exists\", function () {",
+											"    pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "Request Context Propagation Test",
+					"item": [
+						{
+							"name": "Create Book with Custom Request ID",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Book created\", function () {",
+											"    pm.response.to.have.status(201);",
+											"    var jsonData = pm.response.json();",
+											"    pm.environment.set('context_book_id', jsonData.id);",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									},
+									{
+										"key": "x-request-id",
+										"value": "custom-request-{{$randomInt}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Context Test Book\",\n  \"authors\": \"Context Author\",\n  \"publishedBy\": \"Context Publisher\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/books",
+									"host": ["{{base_url}}"],
+									"path": ["api", "books"]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Request ID in Audit Log",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Get the request ID from previous response",
+											"var requestId = pm.environment.get('request_id') || 'custom-request-' + pm.environment.get('$randomInt');",
+											"pm.environment.set('context_request_id', requestId);"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Request ID propagated to audit\", function () {",
+											"    pm.response.to.have.status(200);",
+											"    var jsonData = pm.response.json();",
+											"    ",
+											"    if (jsonData.data.length > 0) {",
+											"        var audit = jsonData.data[0];",
+											"        pm.expect(audit).to.have.property('requestId');",
+											"        pm.expect(audit.requestId).to.exist;",
+											"    }",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-api-key",
+										"value": "{{admin_api_key}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/audits?entityId={{context_book_id}}",
+									"host": ["{{base_url}}"],
+									"path": ["api", "audits"],
+									"query": [
+										{
+											"key": "entityId",
+											"value": "{{context_book_id}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "5. Error Scenarios",
+			"item": [
+				{
+					"name": "Create Book - Unauthorized",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Test\",\n  \"authors\": \"Author\",\n  \"publishedBy\": \"Publisher\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test(\"Error response format\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.error).to.have.property('code');",
+									"    pm.expect(jsonData.error).to.have.property('requestId');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Update Non-Existent Book",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/books/nonexistent-id-99999",
+							"host": ["{{base_url}}"],
+							"path": ["api", "books", "nonexistent-id-99999"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				},
+				{
+					"name": "Get Non-Existent Audit",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/audits/nonexistent-audit-id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "audits", "nonexistent-audit-id"]
+						}
+					},
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "admin_api_key",
+			"value": "admin-api-key-12345",
+			"type": "string"
+		},
+		{
+			"key": "reviewer_api_key",
+			"value": "reviewer-api-key-67890",
+			"type": "string"
+		}
+	]
+}
