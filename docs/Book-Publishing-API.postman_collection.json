@@ -1583,7 +1583,7 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:3000",
+			"value": "https://books-api-omega.vercel.app",
 			"type": "string"
 		},
 		{
