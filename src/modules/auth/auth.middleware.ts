@@ -10,9 +10,16 @@ declare module 'fastify' {
 }
 
 export async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
-  const apiKey = request.headers['x-api-key'] as string;
+  // Vercel may lowercase headers, so check both cases
+  const apiKey = (request.headers['x-api-key'] || request.headers['X-API-Key']) as string;
 
   if (!apiKey) {
+    // Log available headers for debugging (in development)
+    if (process.env.NODE_ENV !== 'production') {
+      logger.warn({ 
+        availableHeaders: Object.keys(request.headers).filter(k => k.toLowerCase().includes('api') || k.toLowerCase().includes('key'))
+      }, 'No API key found in headers');
+    }
     return reply.code(401).send({
       error: {
         code: 'AUTH_MISSING_API_KEY',

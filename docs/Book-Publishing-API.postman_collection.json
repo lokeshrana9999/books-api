@@ -15,9 +15,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/health",
+							"raw": "{{base_url}}/api/health",
 							"host": ["{{base_url}}"],
-							"path": ["health"]
+							"path": ["api", "health"]
 						}
 					},
 					"response": [],

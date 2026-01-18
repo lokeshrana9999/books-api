@@ -10,6 +10,9 @@ export interface AuthUser {
 export class AuthService {
   static async authenticate(apiKey: string): Promise<AuthUser | null> {
     try {
+      // Log the API key prefix for debugging (don't log full key for security)
+      logger.info({ apiKeyPrefix: apiKey?.substring(0, 10) + '...' }, 'Attempting authentication');
+      
       const user = await prisma.user.findFirst({
         where: { credentials: apiKey },
         select: { id: true, name: true, role: true },
@@ -20,10 +23,20 @@ export class AuthService {
         return user as AuthUser;
       }
 
-      logger.warn('Authentication failed: invalid API key');
+      // Check if database connection is working by trying a simple query
+      const userCount = await prisma.user.count();
+      logger.warn({ 
+        apiKeyPrefix: apiKey?.substring(0, 10) + '...',
+        userCount,
+        message: 'Authentication failed: invalid API key or database issue'
+      });
       return null;
     } catch (error) {
-      logger.error({ error }, 'Authentication error');
+      logger.error({ 
+        error,
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined
+      }, 'Authentication error - database connection may have failed');
       return null;
     }
   }
