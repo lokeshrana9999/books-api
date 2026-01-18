@@ -2,6 +2,14 @@
 
 A minimal Book Publishing API in Node.js + TypeScript with a **config-driven audit trail**, role-based access control, and comprehensive observability. Built to demonstrate excellent engineering practice around auxiliary systems: audit trail, access control, logging/observability, and error handling.
 
+## 🌐 Live API
+
+**Deployed API**: [https://books-api-omega.vercel.app/api/](https://books-api-omega.vercel.app/api/)
+
+Try it out:
+- Health check: [https://books-api-omega.vercel.app/api/health](https://books-api-omega.vercel.app/api/health)
+- Use the Postman collection with `base_url` set to `https://books-api-omega.vercel.app/api`
+
 ## Quick Start
 
 ```bash
@@ -15,7 +23,7 @@ cp env.example .env
 # 3. Setup database
 npm run db:generate
 npm run db:migrate
-npm run seed
+npm run seed  # Creates admin & reviewer users + 3 sample books
 
 # 4. Run the server
 npm run dev
@@ -61,7 +69,7 @@ The **Postman collection** (`docs/Book-Publishing-API.postman_collection.json`) 
 1. **Import collection and environment**:
    - Import `docs/Book-Publishing-API.postman_collection.json`
    - Import `docs/Book-Publishing-API.postman_environment.json`
-   - Set `base_url` to `http://localhost:3000` (or your deployed URL)
+   - Set `base_url` to `https://books-api-omega.vercel.app/api` (production) or `http://localhost:3000` (local)
 
 2. **Run the collection**:
    - The collection is organized by feature area
@@ -110,21 +118,34 @@ Switch log destinations via `LOG_SINK` environment variable:
 
 ## Example cURL Commands
 
+These commands demonstrate typical API flows. The seed script creates:
+- **Admin user**: API key `admin-api-key-12345`
+- **Reviewer user**: API key `reviewer-api-key-67890`
+- **3 sample books**: Pre-populated for testing
+
+**Local development** (replace with `https://books-api-omega.vercel.app/api` for production):
+
 ```bash
-# Health check
+# Health check (no auth required)
 curl http://localhost:3000/health
 
-# List books (paginated)
+# List books (paginated) - demonstrates cursor-based pagination
 curl -H "X-API-Key: admin-api-key-12345" \
   "http://localhost:3000/api/books?limit=10"
 
-# Create a book
+# Create a book - demonstrates audit trail capture
 curl -X POST http://localhost:3000/api/books \
   -H "X-API-Key: admin-api-key-12345" \
   -H "Content-Type: application/json" \
   -d '{"title": "Test Book", "authors": "Test Author", "publishedBy": "Test Publisher"}'
 
-# Get audit logs with filters (admin only)
+# Update a book - demonstrates diff calculation in audit logs
+curl -X PATCH http://localhost:3000/api/books/book-1 \
+  -H "X-API-Key: admin-api-key-12345" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Updated Title"}'
+
+# Get audit logs with filters (admin only) - demonstrates rich filtering
 curl -H "X-API-Key: admin-api-key-12345" \
   "http://localhost:3000/api/audits?entity=Book&limit=10"
 ```
