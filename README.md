@@ -266,6 +266,7 @@ npm run db:studio
 
 - [Project Requirements](./project-req.md) - Detailed project requirements and specifications
 - [Supabase Setup Guide](./docs/SUPABASE_SETUP.md) - Step-by-step Supabase integration guide
+- [Vercel Deployment Guide](./docs/VERCEL_DEPLOYMENT.md) - Complete Vercel deployment instructions
 - [Postman Collection](./docs/Book-Publishing-API.postman_collection.json) - Complete API testing collection
 - [Postman Environment](./docs/Book-Publishing-API.postman_environment.json) - Environment variables for Postman
 
