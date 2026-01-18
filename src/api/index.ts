@@ -82,11 +82,17 @@ let app: any;
 export default async function handler(req: any, res: any) {
   if (!app) {
     app = await buildApp();
+    await app.ready();
   }
 
-  // Handle Vercel serverless requests
-  await app.ready();
+  // Vercel provides Node.js http.IncomingMessage and http.ServerResponse
+  // Fastify can handle these directly via the server
   app.server.emit('request', req, res);
+  
+  // Return a promise that resolves when the response is sent
+  return new Promise((resolve) => {
+    res.on('finish', resolve);
+  });
 }
 
 // For local development
