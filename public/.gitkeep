@@ -1,0 +1,2 @@
+# This directory is required by Vercel
+# Serverless functions don't need static files, but Vercel expects this directory
