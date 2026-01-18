@@ -25,6 +25,14 @@ Server runs on `http://localhost:3000`
 
 ## Proof of Completion: Postman Collection
 
+### How to import and test the postman collection.
+
+
+Uploading Recording 2026-01-18 184628.mp4…
+
+
+
+
 The **Postman collection** (`docs/Book-Publishing-API.postman_collection.json`) demonstrates all requirements:
 
 ### 1. Audit Quality ✅
