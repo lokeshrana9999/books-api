@@ -16,9 +16,11 @@ Complete step-by-step guide to deploy the Books API to Vercel with Supabase.
 2. Select your project
 3. Navigate to **Settings** → **Database**
 4. Scroll to **Connection Pooling** section
-5. Select **Session** mode
-6. Copy the connection string
-7. **Add `&connection_limit=1`** at the end (required for serverless)
+5. Copy the connection string (Supabase's pooler automatically uses transaction mode)
+6. **IMPORTANT**: Add `?pgbouncer=true&connection_limit=1` to the connection string
+   - The `pgbouncer=true` parameter tells Prisma to disable prepared statements
+   - This prevents "prepared statement already exists" errors
+   - The `connection_limit=1` is required for serverless functions
 
 Your connection string should look like:
 ```
@@ -241,6 +243,15 @@ Or use Supabase Dashboard → **Table Editor** to manually add initial data.
   - Verify database password is correct
   - Check connection string format
   - Ensure password is URL-encoded if it contains special characters
+
+**Error**: `prepared statement "s0" already exists` or `PrismaClientUnknownRequestError`
+- **Solution**: 
+  - This error occurs because Prisma uses prepared statements that conflict with connection poolers
+  - **Fix**: Ensure your `DATABASE_URL` includes `?pgbouncer=true` parameter
+  - **Format**: `postgresql://...@pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`
+  - The `pgbouncer=true` parameter tells Prisma to disable prepared statements
+  - Update `DATABASE_URL` in Vercel environment variables with the corrected connection string
+  - Supabase's pooler automatically uses transaction mode, so no manual mode selection is needed
 
 ### Cold Start Issues
 

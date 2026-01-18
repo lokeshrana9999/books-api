@@ -32,9 +32,9 @@ You need to navigate to **Settings → Database** to get the connection string:
    - Steps:
      1. Go to Settings → Database
      2. Scroll to **Connection Pooling** section
-     3. Select **Session** mode
-     4. Copy the connection string
-     5. Add `&connection_limit=1` at the end for serverless functions
+     3. Copy the connection string (Supabase's pooler automatically uses transaction mode)
+     4. **IMPORTANT**: Add `?pgbouncer=true&connection_limit=1` to the connection string
+     5. This tells Prisma to disable prepared statements, preventing "prepared statement already exists" errors
 
 ## Quick Setup Steps
 
@@ -92,3 +92,8 @@ postgresql://postgres:[YOUR-PASSWORD]@db.aylqypmwlqtnaastyaxw.supabase.co:5432/p
 - **Authentication failed**: Verify your password is correct
 - **Too many connections**: Use connection pooler instead of direct connection
 - **SSL required**: Supabase requires SSL - Prisma handles this automatically
+- **"prepared statement already exists" error**: 
+  - **Cause**: Prisma uses prepared statements that conflict with connection poolers
+  - **Solution**: Ensure your connection string includes `?pgbouncer=true` parameter
+  - **Format**: `postgresql://...@pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1`
+  - The `pgbouncer=true` parameter tells Prisma to disable prepared statements
